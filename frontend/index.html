@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IntelliDocs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Saltar al contenido</a>
+      <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand-mark sidebar-mark" aria-hidden="true">ID</div>
+      <nav class="nav">
+        <button class="nav-item active" data-tab="upload">Subida</button>
+        <button class="nav-item" data-tab="library">Documentos</button>
+        <button class="nav-item" data-tab="pipeline">Procesamiento</button>
+      </nav>
+    </aside>
+
+    <main id="main" class="content">
+      <header class="topbar">
+        <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Abrir o cerrar navegación" aria-expanded="true">☰</button>
+        <div class="topbar-spacer" aria-hidden="true"></div>
+      </header>
+
+      <section class="hero">
+        <div class="hero-copy">
+          <h1>IntelliDocs</h1>
+          <p>Gestiona documentos y revisa su procesamiento en un solo lugar.</p>
+        </div>
+      </section>
+
+      <section class="tab-panel active" id="tab-upload">
+        <article class="card upload-card">
+          <label id="dropzone" class="dropzone large-dropzone" for="file-input" tabindex="0">
+            <input id="file-input" type="file" accept=".pdf,.png,.jpg,.jpeg" multiple hidden />
+            <div class="drop-visual large-drop-visual">
+              <div class="drop-icon">⇪</div>
+            </div>
+            <h2>Arrastra tus documentos aquí</h2>
+            <p>o toca para abrir el selector de archivos.</p>
+            <span class="drop-hint">PDF, PNG, JPG</span>
+          </label>
+          <div id="selected-files" class="selected-files"></div>
+          <button id="upload-btn" class="btn btn-primary">Enviar para procesar</button>
+        </article>
+      </section>
+
+      <section class="tab-panel" id="tab-library">
+        <article class="card full-height">
+          <div class="panel-head">
+            <div>
+              <h3>Documentos almacenados</h3>
+            </div>
+            <button id="refresh-btn" class="btn btn-secondary">Actualizar</button>
+          </div>
+          <div id="documents-list" class="documents-list"></div>
+        </article>
+      </section>
+
+      <section class="tab-panel" id="tab-pipeline">
+        <article class="card">
+          <div class="panel-head panel-head-centered">
+            <div>
+              <h2>Fases del procesamiento</h2>
+            </div>
+          </div>
+          <div class="pipeline-scheme">
+            <div class="pipeline-step"><span>1</span><strong>Ingesta</strong><p>Recepción del documento y validación básica.</p></div>
+            <div class="pipeline-step"><span>2</span><strong>Almacenamiento</strong><p>Guardado del fichero original y metadatos iniciales.</p></div>
+            <div class="pipeline-step"><span>3</span><strong>OCR</strong><p>Extracción del texto y regiones detectadas.</p></div>
+            <div class="pipeline-step"><span>4</span><strong>Layout</strong><p>Análisis de bloques y estructura del documento.</p></div>
+            <div class="pipeline-step"><span>5</span><strong>Clasificación</strong><p>Estimación del tipo documental.</p></div>
+            <div class="pipeline-step"><span>6</span><strong>Campos clave</strong><p>Detección de fechas, importes, nombres e identificadores.</p></div>
+            <div class="pipeline-step"><span>7</span><strong>Persistencia</strong><p>Registro final de resultados y consulta desde la interfaz.</p></div>
+          </div>
+          <div id="pipeline-preview" class="pipeline-preview"></div>
+        </article>
+      </section>
+
+      <footer class="footer">
+        <div class="footer-copy">
+          <span>Proyecto para la asignatura de Computación Distribuida y de Altas Prestaciones del MEI de la Universidad de Vigo</span>
+          <span>Desarrollado por: Guillermo Cousido y Alejandro Calvo</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+  <script src="./app.js"></script>
+</body>
+</html>
