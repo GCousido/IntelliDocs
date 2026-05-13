@@ -1,0 +1,131 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ocr-service
+spec:
+  selector:
+    app: ocr
+  ports:
+    - port: 8001
+      targetPort: 8001
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ocr-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ocr
+  template:
+    metadata:
+      labels:
+        app: ocr
+    spec:
+      containers:
+        - name: ocr
+          image: localhost/intellidocs-ai:v3
+          imagePullPolicy: IfNotPresent
+          command: ["uvicorn", "ocr:app", "--host", "0.0.0.0", "--port", "8001"]
+          ports:
+            - containerPort: 8001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: layout-service
+spec:
+  selector:
+    app: layout
+  ports:
+    - port: 8002
+      targetPort: 8002
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: layout-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: layout
+  template:
+    metadata:
+      labels:
+        app: layout
+    spec:
+      containers:
+        - name: layout
+          image: localhost/intellidocs-ai:v3
+          imagePullPolicy: IfNotPresent
+          command: ["uvicorn", "layout:app", "--host", "0.0.0.0", "--port", "8002"]
+          ports:
+            - containerPort: 8002
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: classification-service
+spec:
+  selector:
+    app: classification
+  ports:
+    - port: 8003
+      targetPort: 8003
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: classification-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: classification
+  template:
+    metadata:
+      labels:
+        app: classification
+    spec:
+      containers:
+        - name: classification
+          image: localhost/intellidocs-ai:v3
+          imagePullPolicy: IfNotPresent
+          command: ["uvicorn", "classification:app", "--host", "0.0.0.0", "--port", "8003"]
+          ports:
+            - containerPort: 8003
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: extraction-service
+spec:
+  selector:
+    app: extraction
+  ports:
+    - port: 8004
+      targetPort: 8004
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: extraction-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: extraction
+  template:
+    metadata:
+      labels:
+        app: extraction
+    spec:
+      containers:
+        - name: extraction
+          image: localhost/intellidocs-ai:v3
+          imagePullPolicy: IfNotPresent
+          command: ["uvicorn", "extraction:app", "--host", "0.0.0.0", "--port", "8004"]
+          ports:
+            - containerPort: 8004
