@@ -1,0 +1,9 @@
+pytest
+pytest-asyncio
+httpx
+fastapi
+uvicorn
+python-multipart
+Pillow
+pytesseract
+pdf2image
