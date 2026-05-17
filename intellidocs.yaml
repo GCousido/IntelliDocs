@@ -1,0 +1,349 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: minio-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      containers:
+      - name: minio
+        image: quay.io/minio/minio:latest
+        command:
+        - /bin/sh
+        - -c
+        args:
+        - minio server /data --console-address ":9001"
+        env:
+        - name: MINIO_ROOT_USER
+          value: "admin"
+        - name: MINIO_ROOT_PASSWORD
+          value: "password123"
+        ports:
+        - containerPort: 9000
+        - containerPort: 9001
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: minio-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio-service
+spec:
+  type: NodePort
+  ports:
+    - name: api
+      port: 9000
+      targetPort: 9000
+      nodePort: 32000
+    - name: console
+      port: 9001
+      targetPort: 9001
+      nodePort: 32001
+  selector:
+    app: minio
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-master
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spark-master
+  template:
+    metadata:
+      labels:
+        app: spark-master
+    spec:
+      containers:
+      - name: spark-master
+        image: bitnami/spark:latest
+        env:
+        - name: SPARK_MODE
+          value: master
+        - name: SPARK_RPC_AUTHENTICATION_ENABLED
+          value: "no"
+        - name: SPARK_RPC_ENCRYPTION_ENABLED
+          value: "no"
+        - name: SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED
+          value: "no"
+        - name: SPARK_SSL_ENABLED
+          value: "no"
+        ports:
+        - containerPort: 7077
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spark-master-svc
+spec:
+  ports:
+  - name: cluster
+    port: 7077
+    targetPort: 7077
+  - name: webui
+    port: 8080
+    targetPort: 8080
+  selector:
+    app: spark-master
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: spark-worker
+  template:
+    metadata:
+      labels:
+        app: spark-worker
+    spec:
+      containers:
+      - name: spark-worker
+        image: bitnami/spark:latest
+        env:
+        - name: SPARK_MODE
+          value: worker
+        - name: SPARK_MASTER_URL
+          value: spark://spark-master-svc:7077
+        - name: SPARK_WORKER_MEMORY
+          value: 1G
+        - name: SPARK_WORKER_CORES
+          value: "1"
+        - name: SPARK_RPC_AUTHENTICATION_ENABLED
+          value: "no"
+        - name: SPARK_RPC_ENCRYPTION_ENABLED
+          value: "no"
+        - name: SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED
+          value: "no"
+        - name: SPARK_SSL_ENABLED
+          value: "no"
+        ports:
+        - containerPort: 8081
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ocr-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ocr
+  template:
+    metadata:
+      labels:
+        app: ocr
+    spec:
+      containers:
+      - name: ocr
+        image: localhost/intellidocs-ai:v3
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ocr-service
+spec:
+  ports:
+  - port: 8000
+    targetPort: 8000
+  selector:
+    app: ocr
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: layout-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: layout
+  template:
+    metadata:
+      labels:
+        app: layout
+    spec:
+      containers:
+      - name: layout
+        image: localhost/intellidocs-ai:v3
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: layout-service
+spec:
+  ports:
+  - port: 8000
+    targetPort: 8000
+  selector:
+    app: layout
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: classification-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: classification
+  template:
+    metadata:
+      labels:
+        app: classification
+    spec:
+      containers:
+      - name: classification
+        image: localhost/intellidocs-ai:v3
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: classification-service
+spec:
+  ports:
+  - port: 8000
+    targetPort: 8000
+  selector:
+    app: classification
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: extraction-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: extraction
+  template:
+    metadata:
+      labels:
+        app: extraction
+    spec:
+      containers:
+      - name: extraction
+        image: localhost/intellidocs-ai:v3
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: extraction-service
+spec:
+  ports:
+  - port: 8000
+    targetPort: 8000
+  selector:
+    app: extraction
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: localhost/intellidocs-backend:v3
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8000
+        env:
+        - name: MINIO_ENDPOINT
+          value: "minio-service:9000"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+spec:
+  type: NodePort
+  ports:
+  - port: 8000
+    targetPort: 8000
+    nodePort: 31001
+  selector:
+    app: backend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: localhost/intellidocs-frontend:v2
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 31000
+  selector:
+    app: frontend
