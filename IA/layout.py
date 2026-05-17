@@ -23,8 +23,6 @@ def load_pages(filename: str, content: bytes) -> list[Image.Image]:
         return convert_from_bytes(
             content,
             dpi=250,
-            first_page=1,
-            last_page=3,
             thread_count=2,
             grayscale=True,
         )
