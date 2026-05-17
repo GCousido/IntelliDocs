@@ -7,3 +7,4 @@ python-multipart
 Pillow
 pytesseract
 pdf2image
+minio

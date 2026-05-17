@@ -299,12 +299,10 @@ def test_layout_skips_empty_text(mock_ocr_data):
 
 
 # ===== TESTS PARA OCR =====
-@patch('ocr.pytesseract.image_to_osd')
 @patch('ocr.pytesseract.image_to_data')
 @patch('ocr.pytesseract.image_to_string')
-def test_ocr_extracts_text_correctly(mock_ocr, mock_ocr_data, mock_osd):
+def test_ocr_extracts_text_correctly(mock_ocr, mock_ocr_data):
     """Test de extracción correcta de texto por OCR"""
-    mock_osd.return_value = {"rotate": 0}
     mock_ocr.return_value = "Este es el texto detectado por OCR"
     mock_ocr_data.return_value = make_ocr_data(text="Texto", conf="85")
     
@@ -318,14 +316,13 @@ def test_ocr_extracts_text_correctly(mock_ocr, mock_ocr_data, mock_osd):
     assert data["language"] == "spa+eng"
     assert data["page_count"] == 1
     assert data["pages"][0]["text"] == "Este es el texto detectado por OCR"
+    assert "psm_used" in data["pages"][0]
 
 
-@patch('ocr.pytesseract.image_to_osd')
 @patch('ocr.pytesseract.image_to_data')
 @patch('ocr.pytesseract.image_to_string')
-def test_ocr_strips_whitespace(mock_ocr, mock_ocr_data, mock_osd):
+def test_ocr_strips_whitespace(mock_ocr, mock_ocr_data):
     """Test de eliminación de espacios en blanco inicial/final en OCR"""
-    mock_osd.return_value = {"rotate": 0}
     mock_ocr.return_value = "   Texto con espacios   "
     mock_ocr_data.return_value = make_ocr_data(text="Texto", conf="80")
     
@@ -338,12 +335,10 @@ def test_ocr_strips_whitespace(mock_ocr, mock_ocr_data, mock_osd):
     assert data["text"] == "Texto con espacios"
 
 
-@patch('ocr.pytesseract.image_to_osd')
 @patch('ocr.pytesseract.image_to_data')
 @patch('ocr.pytesseract.image_to_string')
-def test_ocr_handles_empty_result(mock_ocr, mock_ocr_data, mock_osd):
+def test_ocr_handles_empty_result(mock_ocr, mock_ocr_data):
     """Test de mensaje de OCR cuando no detecta texto"""
-    mock_osd.return_value = {"rotate": 0}
     mock_ocr.return_value = ""
     mock_ocr_data.return_value = make_ocr_data(text="", conf="-1", width=0, height=0)
     
