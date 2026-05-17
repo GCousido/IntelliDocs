@@ -131,8 +131,8 @@ function renderPipelineExample() {
 <p>${escapeHtml(doc.storage_path || "Sin ruta")}</p>
 </section>
 <section class="document-block">
-<h4>Contenido extraído</h4>
-<p>${escapeHtml(ocrText.slice(0, 320) || "Sin texto disponible.")}</p>
+  <h4>Contenido extraído</h4>
+  <pre class="ocr-text">${escapeHtml(ocrText || "Sin texto disponible.")}</pre>
 </section>
 <section class="document-block">
 <h4>Layout</h4>
@@ -193,8 +193,8 @@ function renderDocuments() {
 </div>
 <div class="documents-grid">
 <section class="document-block">
-<h4>Contenido extraído</h4>
-<p>${escapeHtml((doc.ocr?.text || "").slice(0, 280) || "Sin texto disponible.")}</p>
+  <h4>Contenido extraído</h4>
+  <pre class="ocr-text">${escapeHtml(doc.ocr?.text || "Sin texto disponible.")}</pre>
 </section>
 <section class="document-block">
 <h4>Layout</h4>

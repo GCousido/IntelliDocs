@@ -21,10 +21,10 @@ CLASSIFICATION_URL = "http://classification-service:8003/process"
 EXTRACTION_URL = "http://extraction-service:8004/process"
 
 DEFAULT_TIMEOUT = httpx.Timeout(
-    connect=10.0,
-    read=120.0,
-    write=120.0,
-    pool=10.0,
+    connect=30.0,
+    read=240.0,
+    write=240.0,
+    pool=30.0,
 )
 
 async def post_file(
