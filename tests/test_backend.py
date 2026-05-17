@@ -2,13 +2,81 @@ from fastapi.testclient import TestClient
 import sys
 import os
 import json
+import pytest
 from unittest.mock import patch, AsyncMock
 
 # Añadir el backend al path para poder importarlo
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../Backend')))
-from main import app, documents_db
+from main import app, documents_db, OCR_URL, LAYOUT_URL, CLASSIFICATION_URL, EXTRACTION_URL
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def mock_pipeline_calls():
+    state = {
+        "ocr": {
+            "text": "Factura 12345 total 250.50",
+            "language": "spa+eng",
+            "pages": [
+                {
+                    "page": 1,
+                    "variant_used": "gray",
+                    "psm_used": 4,
+                    "confidence": 88.5,
+                    "text": "Factura 12345 total 250.50",
+                    "regions": [],
+                }
+            ],
+            "confidence": 88.5,
+            "page_count": 1,
+        },
+        "layout": {
+            "layout": [
+                {
+                    "page": 1,
+                    "words": [],
+                    "lines": [],
+                    "blocks": [],
+                }
+            ],
+            "page_count": 1,
+        },
+        "classification": {
+            "label": "Factura",
+            "confidence": 0.88,
+        },
+        "extraction": {
+            "label": "Factura",
+            "fields": {
+                "fecha": "25/12/2023",
+                "total": "250.50",
+                "numero_factura": "12345",
+            },
+            "evidence": {},
+        },
+    }
+
+    async def post_file_side_effect(client, url, filename, content, content_type):
+        if url == OCR_URL:
+            return state["ocr"]
+        if url == LAYOUT_URL:
+            return state["layout"]
+        return {}
+
+    async def post_json_side_effect(client, url, payload):
+        if url == CLASSIFICATION_URL:
+            return state["classification"]
+        if url == EXTRACTION_URL:
+            return state["extraction"]
+        return {}
+
+    with patch("main.post_file", new_callable=AsyncMock) as mock_post_file, patch(
+        "main.post_json", new_callable=AsyncMock
+    ) as mock_post_json:
+        mock_post_file.side_effect = post_file_side_effect
+        mock_post_json.side_effect = post_json_side_effect
+        yield state
 
 
 # ===== TESTS PARA DOCUMENTOS =====
@@ -130,8 +198,8 @@ def test_upload_document_with_empty_file():
     files = {"file": ("empty.pdf", b"", "application/pdf")}
     
     response = client.post("/documents/upload", files=files)
-    assert response.status_code == 200
-    assert response.json()["document"]["filename"] == "empty.pdf"
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Archivo vacío"
 
 
 def test_document_storage_path_format():
